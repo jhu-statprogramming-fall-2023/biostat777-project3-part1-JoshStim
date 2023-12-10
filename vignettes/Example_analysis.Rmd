@@ -1,0 +1,261 @@
+---
+title: "Example Analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center", 
+  out.width = "90%",
+  fig.width = 6, fig.height = 5.5
+)
+```
+
+```{r setup}
+library(tidyverse)
+library(leaps)
+library(forcats)
+library(here)
+library(gridExtra)
+```
+
+Get the data from Tidy Tuesday
+```{r}
+if (!dir.exists(here("vignettes","data"))) {
+  
+  dir.create(here("vignettes", "data"))
+  tuesdata <- tidytuesdayR::tt_load(2021, week = 10)
+  youtube.raw <- tuesdata$youtube
+  write.csv(youtube.raw, here("vignettes", "data","youtube.csv"))
+  
+} else{
+  
+  youtube.raw <- read.csv(here("vignettes", "data","youtube.csv"))
+  
+}
+
+glimpse(youtube.raw)
+```
+
+Wrangle data
+```{r}
+size_factor <- 1/2
+youtube.mod <- youtube.raw %>%
+  mutate(like_to_dislike = (like_count + 1) / (dislike_count + 1),
+         view_group = case_when(view_count > 10 ** 6 ~ (size_factor)**0,
+         view_count > 10 ** 5 & view_count <= 10 ** 6 ~ (size_factor)**1,
+         view_count > 10 ** 4 & view_count <= 10 ** 5 ~ (size_factor)**2,
+         view_count > 10 ** 3 & view_count <= 10 ** 4 ~ (size_factor)**3,
+         view_count > 0 & view_count <= 10 ** 3 ~ (size_factor)**4)) %>%
+  mutate(view_factor = factor(view_group),
+         view_count_log10 = log10(view_count),
+         like_to_dislike_log10 = log10(like_to_dislike))
+
+levels(youtube.mod$view_factor) <- c("views \u2264 1,000",
+                         "1,000 < views \u2264 10,000",
+                         "10,000 < views \u2264 100,000",
+                         "100,000 < views \u2264 1,000,000",
+                         "views > 1,000,000")
+
+youtube.attr_by_year <- youtube.mod %>%
+  group_by(year) %>%
+  summarize(n = n(),
+            funny = mean(funny),
+            celebrity = mean(celebrity),
+            use_sex = mean(use_sex),
+            spq = mean(show_product_quickly),
+            patriotic = mean(patriotic),
+            danger = mean(danger),
+            animals = mean(animals),
+            lltd = mean(like_to_dislike, na.rm = TRUE),
+            lltd_sem = sd(like_to_dislike, na.rm = TRUE)/ sqrt(n())) %>%
+  pivot_longer(cols = funny:animals, names_to = "attribute", values_to = "relative_prop")
+
+youtube.attr_by_brand <- youtube.mod %>%
+  group_by(brand) %>%
+  summarize(n = n(),
+            funny = mean(funny),
+            celebrity = mean(celebrity),
+            use_sex = mean(use_sex),
+            spq = mean(show_product_quickly),
+            patriotic = mean(patriotic),
+            danger = mean(danger),
+            animals = mean(animals),
+            lltd = mean(like_to_dislike, na.rm = TRUE),
+            lltd_sem = sd(like_to_dislike, na.rm = TRUE)/ sqrt(n())) %>%
+  pivot_longer(cols = funny:animals, names_to = "attribute", values_to = "relative_prop")
+```
+
+Present by_year and by_brand plots
+```{r}
+youtube.attr_by_year %>%
+  ggplot(aes(x = year, y = relative_prop, color = attribute)) +
+  geom_line() +
+  facet_wrap(~attribute) +
+  labs(title = "Trends in Commercial Attribute Use over Time",
+       subtitle = "Use of the 'funny' and 'sex' attributes in superbowl commercials is decreasing \n over time, while the use 'celebrity' and 'patriotic' is rising.",
+       x = "Year",
+       y = "Relative Proportion") +
+  theme_bw() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(size = 8))
+
+youtube.attr_by_brand %>%
+  ggplot(aes(x = attribute, y = brand, fill = relative_prop)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  geom_text(aes(label=round(relative_prop,2)), colour = "black", check_overlap = TRUE) +
+  labs(title = "Proportion of Brand's Commericials exhibiting Attribute",
+       subtitle = "Within brands, 'Funny' and 'Shows product quickly' (spq) are among the most \n common commercial attributes.",
+       x = "Commercial Attribute",
+       y = "Brand",
+       fill = "Relative Proportion") +
+  theme_bw()
+```
+
+Plot log like to dislike ratio by brand and year
+
+```{r, warning = FALSE, message = FALSE}
+youtube.mod %>%
+  select(funny, show_product_quickly, patriotic, animals, danger, 
+         celebrity, use_sex, like_to_dislike) %>%
+  pivot_longer(cols = funny:use_sex,
+               names_to = "attribute",
+               values_to = "value") %>%
+  ggplot(aes(x = value, y = like_to_dislike, fill = attribute)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.15, alpha = 0.25, size = 1) +
+  stat_summary(fun = "mean", color = "white", shape = 3) +
+  scale_y_continuous(trans = 'log10') +
+  facet_wrap(~attribute) +
+  labs(title = "Commercial Favorability by Attribute",
+       subtitle = "'Celebrity' and 'Danger' are associated with greater mean commericial favorability.",
+       caption = "NOTE: Y-axis is on a log10 scale.",
+       x = "Level",
+       y = "Likes-to-Dislikes Ratio") +
+  theme_bw() +
+  theme(legend.position = 'none')
+
+```
+
+```{r, warning = FALSE, message = FALSE}
+youtube.mod %>%
+  #filter(view_count > 1000) %>%
+  group_by(year) %>%
+  mutate(lmean = 10**mean(log10(like_to_dislike), na.rm = TRUE)) %>%
+  ggplot(aes(x = year, y = like_to_dislike)) +
+  geom_point(aes(size = view_group, color = view_factor), alpha = 0.5) +
+  geom_smooth(method = "lm", color = "black") +
+  scale_y_continuous(trans = 'log10') +
+  scale_size(guide = "none") +
+  scale_colour_discrete(na.translate = F) +
+  labs(title = "Commercial Favorability over Time",
+       subtitle = "Favorability averages are relatively constant over time.",
+       x = "Year",
+       y = "Likes-to-Dislikes Ratio",
+       caption = "NOTE: Y-axis is on a log10 scale.",
+       color = "View Count") +
+  theme_bw()
+
+youtube.mod %>%
+  filter(!is.na(like_count)) %>%
+  ggplot(aes(x = fct_reorder(brand, like_to_dislike, .fun = median), 
+             y = like_to_dislike)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(aes(size = view_group,
+                 color = view_factor),
+             alpha = 0.5,
+             position=position_jitter(width=0.15)) +
+  scale_y_continuous(trans = 'log10') +
+  scale_size(guide = "none") +
+  labs(title = "Commercial Favorability and Viewership by Brand", 
+       subtitle = "Kia commericals had the highest average likes-to-dislikes ratio. \n Doritos had the most commericals with > 1 million views.",
+       x = "Brand",
+       y = "Likes-to-Dislikes Ratio",
+       color = "View Count",
+       caption = "NOTE: Y-axis is on a log10 scale.") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = -35))
+
+```
+
+```{r, warning = FALSE, message = FALSE}
+youtube.mod %>%
+  #filter(view_count > 1000) %>%
+  ggplot(aes(x = view_count, y = like_to_dislike)) +
+  geom_point(shape = 1) +
+  geom_smooth(method = "lm", color = "black") +
+  scale_y_continuous(trans = 'log10') +
+  scale_x_continuous(trans = 'log10') +
+  labs(title = "Commerical Favorability as a Function of View Count",
+       subtitle = "On average, higher viewiership is associated with greater favorability.",
+       caption = "NOTE: Y-axis is on a log10 scale.",
+       x = "View Count",
+       y = "Likes-to-Dislikes Ratio") +
+  theme_bw()
+``` 
+
+Below, I use `leaps::regsubsets` to apply model subset selection using exhaustive search.
+```{r, fig.width = 9, fig.height = 9}
+################################################################################
+# Clean data frame before running model selection algo
+################################################################################
+youtube.subset <- youtube.mod %>%
+  #filter(view_count > 1000) %>%
+  select(year, funny, show_product_quickly, patriotic, animals, danger, 
+         celebrity, use_sex, view_count_log10, like_to_dislike_log10) %>%
+  filter(!is.na(view_count_log10) & !is.na(like_to_dislike_log10))
+
+################################################################################
+# Run leaps::regsubsets to perform model selection by EXHAUSTIVE search 
+################################################################################
+mod.subsets <- leaps::regsubsets(like_to_dislike_log10 ~., 
+                  data = youtube.subset, 
+                  force.in = NULL, force.out = NULL,
+                  method = "exhaustive")
+
+################################################################################
+# Plot summary of output from regsubsets
+################################################################################
+mod.subsets.summary <- summary(mod.subsets)
+
+par(mfrow = c(2,2))
+  plot(mod.subsets.summary$rss, xlab = "Number of Variables", ylab = "RSS", type = 'l')
+  
+  plot(mod.subsets.summary$bic, xlab = "Number of Variables", ylab = "BIC", type = 'l')
+  points(3,mod.subsets.summary$bic[3],col="red",cex=2,pch=20)
+  
+  plot(mod.subsets.summary$adjr2, xlab = "Number of Variables", ylab = "Adjusted RSq", type = 'l')
+  points(6,mod.subsets.summary$adjr2[6],col="red",cex=2,pch=20)
+  
+  plot(mod.subsets.summary$cp, xlab = "Number of Variables", ylab = "Cp", type = 'l')
+  points(4,mod.subsets.summary$cp[4],col="red",cex=2,pch=20)
+```
+
+```{r, fig.width = 9, fig.height = 9}
+par(mfrow = c(2,2))
+  plot(mod.subsets, scale = "bic")
+  plot(mod.subsets, scale = "r2")
+  plot(mod.subsets, scale = "adjr2")
+  plot(mod.subsets, scale = "Cp")
+```
+
+Now we will build and summarize the best fitting model given the output from `leaps::regsubsets`
+```{r, fig.width = 9, fig.height = 9}
+################################################################################
+# Build best fitting model and then summarize
+################################################################################
+mod <- lm(like_to_dislike_log10 ~ 1 + year + view_count_log10 + factor(patriotic) + factor(animals) + factor(danger) + factor(celebrity), data = youtube.subset)
+
+anova(mod)
+summary(mod)
+par(mfrow = c(2,2))
+plot(mod)
+```
+

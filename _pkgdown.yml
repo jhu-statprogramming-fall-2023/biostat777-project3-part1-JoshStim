@@ -1,0 +1,9 @@
+home:
+  links:
+  - text: Browse Source Code
+    href: https://github.com/cran/leaps
+
+template:
+  bootstrap: 5
+  bootswatch: minty
+
