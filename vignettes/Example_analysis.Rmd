@@ -63,48 +63,47 @@ levels(youtube.mod$view_factor) <- c("views \u2264 1,000",
                          "100,000 < views \u2264 1,000,000",
                          "views > 1,000,000")
 
-youtube.attr_by_year <- youtube.mod %>%
-  group_by(year) %>%
-  summarize(n = n(),
-            funny = mean(funny),
-            celebrity = mean(celebrity),
-            use_sex = mean(use_sex),
-            spq = mean(show_product_quickly),
-            patriotic = mean(patriotic),
-            danger = mean(danger),
-            animals = mean(animals),
-            lltd = mean(like_to_dislike, na.rm = TRUE),
-            lltd_sem = sd(like_to_dislike, na.rm = TRUE)/ sqrt(n())) %>%
+youtube.attr_by_year <- split(youtube.mod, youtube.mod$year) %>%
+  map(function(x) summarize(x, n = n(),
+                            funny = mean(funny),
+                            celebrity = mean(celebrity),
+                            use_sex = mean(use_sex),
+                            spq = mean(show_product_quickly),
+                            patriotic = mean(patriotic),
+                            danger = mean(danger),
+                            animals = mean(animals),
+                            lltd = mean(like_to_dislike, na.rm = TRUE))) %>%
+  map_df(.f = ~.x, .id = "year") %>%
   pivot_longer(cols = funny:animals, names_to = "attribute", values_to = "relative_prop")
 
-youtube.attr_by_brand <- youtube.mod %>%
-  group_by(brand) %>%
-  summarize(n = n(),
-            funny = mean(funny),
-            celebrity = mean(celebrity),
-            use_sex = mean(use_sex),
-            spq = mean(show_product_quickly),
-            patriotic = mean(patriotic),
-            danger = mean(danger),
-            animals = mean(animals),
-            lltd = mean(like_to_dislike, na.rm = TRUE),
-            lltd_sem = sd(like_to_dislike, na.rm = TRUE)/ sqrt(n())) %>%
+youtube.attr_by_brand <- split(youtube.mod, youtube.mod$brand) %>%
+  map(function(x) summarize(x, n = n(),
+                            funny = mean(funny),
+                            celebrity = mean(celebrity),
+                            use_sex = mean(use_sex),
+                            spq = mean(show_product_quickly),
+                            patriotic = mean(patriotic),
+                            danger = mean(danger),
+                            animals = mean(animals),
+                            lltd = mean(like_to_dislike, na.rm = TRUE))) %>%
+  map_df(.f = ~.x, .id = "brand") %>%
   pivot_longer(cols = funny:animals, names_to = "attribute", values_to = "relative_prop")
 ```
 
 Present by_year and by_brand plots
-```{r}
+```{r, fig.height = 5}
 youtube.attr_by_year %>%
-  ggplot(aes(x = year, y = relative_prop, color = attribute)) +
+  ggplot(aes(x = year, y = relative_prop, color = attribute, group = 1)) +
   geom_line() +
   facet_wrap(~attribute) +
   labs(title = "Trends in Commercial Attribute Use over Time",
        subtitle = "Use of the 'funny' and 'sex' attributes in superbowl commercials is decreasing \n over time, while the use 'celebrity' and 'patriotic' is rising.",
        x = "Year",
        y = "Relative Proportion") +
+  scale_x_discrete(breaks=seq(2000,2020,5)) +
   theme_bw() +
   theme(legend.position = "none",
-        axis.text.x = element_text(size = 8))
+        axis.text.x = element_text(size = 6))
 
 youtube.attr_by_brand %>%
   ggplot(aes(x = attribute, y = brand, fill = relative_prop)) +
@@ -121,7 +120,7 @@ youtube.attr_by_brand %>%
 
 Plot log like to dislike ratio by brand and year
 
-```{r, warning = FALSE, message = FALSE}
+```{r, warning = FALSE, message = FALSE, fig.height = 5}
 youtube.mod %>%
   select(funny, show_product_quickly, patriotic, animals, danger, 
          celebrity, use_sex, like_to_dislike) %>%
@@ -144,7 +143,7 @@ youtube.mod %>%
 
 ```
 
-```{r, warning = FALSE, message = FALSE}
+```{r, warning = FALSE, message = FALSE, fig.height = 5}
 youtube.mod %>%
   #filter(view_count > 1000) %>%
   group_by(year) %>%
