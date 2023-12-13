@@ -4,10 +4,10 @@
 
 **Project Author:** Josh Stim <jstim1@jh.edu>
 
-URL to the original Leaps GitHub repository:
+Original Leaps GitHub Repo:
 <https://github.com/cran/leaps> 
 
-URL to deployed pkgdown website:
+Deployed Website:
 <https://jhu-statprogramming-fall-2023.github.io/biostat777-project3-part1-JoshStim/>
 
 ## Five Website Customizations:
