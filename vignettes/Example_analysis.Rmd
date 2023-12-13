@@ -344,7 +344,7 @@ According to the model summary, the model estimates that, **on average**:
   
   3. the use of celebrities in a commercial is associated with an approximately 80% increase in like-to-dislike ratio.
   
-It is important to note that, based on the model diagnostic plots, really large and really small like-to-dislike ratios tend to be overestimated. Therefore, extreme estimates of like-to-dislike ratios should be taken with a grain of salt.
+It is important to note that, based on the model diagnostic plots, extreme estimates of the like-to-dislike ratio tend to actually be *over*estimates. Therefore, really large and really small estimates of like-to-dislike ratio should be taken with a healthy degree of skepticism.
 
 ## Summary
 Overall, this analysis showed that variations in superbowl commercial favorability, as measured by like-to-dislike ratio, can be explained in part by their view count on youtube, the inclusion of "dangerous" themes, and the inclusion of celebrities. It is important to note that this analysis was conducted on a limited sample of superbowl commercials provided by Five-Thirty-Eight, and so the findings from this analysis may not generalize to a larger, more representative sample. 
