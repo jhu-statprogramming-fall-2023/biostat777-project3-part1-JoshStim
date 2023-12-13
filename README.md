@@ -64,14 +64,14 @@ number of observations.”
     or sequential replacement.” - From [R
     Documentation](https://cran.r-project.org/web/packages/leaps/leaps.pdf)
 
-How to Install:
+## How to Install:
 
 ``` r
 #install.packages("leaps")
 library(leaps)
 ```
 
-Example (`leaps`):
+## Example (`leaps`):
 
 ``` r
 x<-matrix(rnorm(100),ncol=4)
@@ -108,7 +108,7 @@ leaps(x,y)
     ##  [8] 2.5884817 3.3124224 3.4143018 3.1314267 3.4157622 3.7477685 4.2396485
     ## [15] 5.0000000
 
-Example (`regsubsets`):
+## Example (`regsubsets`):
 
 ``` r
 data(swiss)
