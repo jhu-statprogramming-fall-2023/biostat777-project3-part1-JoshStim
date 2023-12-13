@@ -8,7 +8,7 @@ URL to the original Leaps GitHub repository:
 <https://github.com/cran/leaps> 
 
 URL to deployed pkgdown website:
-<https://jhu-statprogramming-fall-2023.github.io/biostat777-project3-pkgdown-JoshStim>
+<https://jhu-statprogramming-fall-2023.github.io/biostat777-project3-part1-JoshStim/>
 
 ## Five Website Customizations:
 
