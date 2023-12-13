@@ -1,8 +1,8 @@
 # Leaps – Regression Subset Selection
 
-**Package Author and Maintainer:** Thomas Lumley
+**Package Author and Maintainer:** Thomas Lumley <t.lumley@auckland.ac.nz> 
 
-<t.lumley@auckland.ac.nz> **Project Author:** Josh Stim <jstim1@jh.edu>
+**Project Author:** Josh Stim <jstim1@jh.edu>
 
 URL to the original Leaps GitHub repository:
 <https://github.com/cran/leaps> 
