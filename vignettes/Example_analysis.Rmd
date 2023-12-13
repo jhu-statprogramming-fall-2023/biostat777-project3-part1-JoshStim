@@ -32,14 +32,14 @@ In this analysis, I seek to demonstrate the use of the `leaps` package, and answ
   
   2. Which commercial attributes are associated with higher favorability?
   
-  3. To what extent does superbowl commercial favorability vary over time and between brands?
+  3. To what extent does Superbowl commercial favorability vary over time and between brands?
   
   4. Using multiple linear regression, can we identify significant predictors of commercial favorability?
   
 Note that I will be using the commercial's **like-to-dislike ratio** from youtube to quantify its favorability.
 
 ## Load Data
-The data for this analysis are from [Five-Thirty-Eight](https://github.com/fivethirtyeight/superbowl-ads) by-way-of [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-03-02/readme.md). The TidyTuesday link provides access to the TidyTuesday github repository as well as the data dictionary used for this analysis.
+The data for this analysis are from [Five-Thirty-Eight](https://github.com/fivethirtyeight/superbowl-ads) by-way-of [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-03-02/readme.md). The TidyTuesday link provides access to the TidyTuesday github repository as well as the data dictionary used for this analysis. Briefly, the data provides information on 247 Superbowl commercials between the years 2000 and 2020. Each commercial is evaluated on the presence or absence of 7 different attributes, and the youtube view counts, like counts, and dislike counts are provided.
 ```{r}
 if (!file.exists(here("data","youtube.csv"))) {
   
@@ -60,11 +60,21 @@ glimpse(youtube.raw)
 ## Wrangle data
 Here, I create 3 different data frames:
 
-  1. `youtube.mod`: same as the `youtube.raw` data frame, but includes the mutated columns `like_to_dislike`, `view_count`, `view_group`, `view_factor`, `view_count_log10`, and `like_to_dislike_log10`.
+  * `youtube.mod`: same as the `youtube.raw` data frame, but includes the mutated columns `like_to_dislike`, `view_group`, `view_factor`, `view_count_log10`, and `like_to_dislike_log10`. I briefly summarize these variables below:
   
-  2. `youtube.attr_by_year`: summarizes commercial attributes and favorability by year
+    + `like-to-dislike`: The likes-to-dislikes ratio for a given commercial. Note that I added the `+1` in the numerator and denominator to correct for instances where the commercial has either 0 likes or dislikes. This is required for the `log10` transformation.
+    
+    + `view_group`: used for defining point size based on number of views in `ggplot`.
+    
+    + `view_factor`: assigns a bin label to each commercial based on its `view_count`.
+    
+    + `view_count_log10`: A `log10` transformation of `view_count`.
+    
+    + `like_to_dislike_log10`: A `log10` transformation of `like-to-dislike`.
   
-  3. `youtube.attr_by_brand`: summarizes commercial attributes and favorability by brand
+  * `youtube.attr_by_year`: summarizes commercial attributes and favorability by year
+  
+  * `youtube.attr_by_brand`: summarizes commercial attributes and favorability by brand
 ```{r}
 size_factor <- 1/2
 youtube.mod <- youtube.raw %>%
@@ -84,6 +94,10 @@ levels(youtube.mod$view_factor) <- c("views \u2264 1,000",
                          "100,000 < views \u2264 1,000,000",
                          "views > 1,000,000")
 
+glimpse(youtube.mod)
+```
+
+```{r}
 youtube.attr_by_year <- split(youtube.mod, youtube.mod$year) %>%
   map(function(x) summarize(x, n = n(),
                             funny = mean(funny),
@@ -97,6 +111,8 @@ youtube.attr_by_year <- split(youtube.mod, youtube.mod$year) %>%
   map_df(.f = ~.x, .id = "year") %>%
   pivot_longer(cols = funny:animals, names_to = "attribute", values_to = "relative_prop")
 
+glimpse(youtube.attr_by_year)
+
 youtube.attr_by_brand <- split(youtube.mod, youtube.mod$brand) %>%
   map(function(x) summarize(x, n = n(),
                             funny = mean(funny),
@@ -109,6 +125,8 @@ youtube.attr_by_brand <- split(youtube.mod, youtube.mod$brand) %>%
                             lltd = mean(like_to_dislike, na.rm = TRUE))) %>%
   map_df(.f = ~.x, .id = "brand") %>%
   pivot_longer(cols = funny:animals, names_to = "attribute", values_to = "relative_prop")
+
+glimpse(youtube.attr_by_brand)
 ```
 
 ## Analysis
@@ -120,7 +138,7 @@ youtube.attr_by_year %>%
   geom_line() +
   facet_wrap(~attribute) +
   labs(title = "Trends in Commercial Attribute Use over Time",
-       subtitle = "Use of the 'funny' and 'sex' attributes in superbowl commercials is decreasing \n over time, while the use 'celebrity' and 'patriotic' is rising.",
+       subtitle = "The use of 'funny' and 'sex' is decreasing over time, while 'celebrity' and 'patriotic' is rising.",
        x = "Year",
        y = "Relative Proportion",
        caption = "Units on the x-axis are discrete. Line plots were used for the ease of viewing.") +
@@ -138,11 +156,11 @@ youtube.attr_by_brand %>%
   scale_fill_gradient(low = "white", high = "red") +
   geom_text(aes(label=round(relative_prop,2)), colour = "black", check_overlap = TRUE) +
   labs(title = "Proportion of Brand's Commericials exhibiting Attribute",
-       subtitle = "Within brands, 'Funny' and 'Shows product quickly' (spq) are among the most \n common commercial attributes.",
+       subtitle = "'Funny' and 'Shows product quickly' are among the most common attributes.",
        x = "Commercial Attribute",
        y = "Brand",
        fill = "Relative Proportion",
-       caption = "Tile colors represent the proportion of a brand's \n commercials containing the given attribute.") +
+       caption = "Colors represent the proportion of a brand's commercials containing an attribute.") +
   theme_bw() +
   theme(text = element_text(size = 15),
         plot.title = element_text(size = 20),
