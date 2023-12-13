@@ -6,7 +6,11 @@ Description: Regression subset selection, including exhaustive search.
 Suggests: 
     biglm,
     knitr,
-    rmarkdown
+    rmarkdown,
+    tidyverse,
+    forcats,
+    here,
+    ggpmisc
 License: GPL (>= 2)
 Maintainer: Thomas Lumley <t.lumley@auckland.ac.nz>
 NeedsCompilation: yes
