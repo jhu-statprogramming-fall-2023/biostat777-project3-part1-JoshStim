@@ -13,19 +13,33 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.align = "center", 
   out.width = "90%",
-  fig.width = 6, fig.height = 5.5
+  fig.width = 10, fig.height = 8
 )
 ```
 
-```{r setup}
+```{r setup, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(leaps)
 library(forcats)
 library(here)
-library(gridExtra)
+library(ggpmisc)
 ```
 
-Get the data from Tidy Tuesday
+## Aims
+In this analysis, I seek to demonstrate the use of the `leaps` package, and answer the following questions about superbowl commercials:
+
+  1. What are the most common superbowl commercial attributes, and how do they vary in usage over time and within brands?
+  
+  2. Which commercial attributes are associated with higher favorability?
+  
+  3. To what extent does superbowl commercial favorability vary over time and between brands?
+  
+  4. Using multiple linear regression, can we identify significant predictors of commercial favorability?
+  
+Note that I will be using the commercial's **like-to-dislike ratio** from youtube to quantify its favorability.
+
+## Load Data
+The data for this analysis are from [Five-Thirty-Eight](https://github.com/fivethirtyeight/superbowl-ads) by-way-of [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-03-02/readme.md). The TidyTuesday link provides access to the TidyTuesday github repository as well as the data dictionary used for this analysis.
 ```{r}
 if (!dir.exists(here("vignettes","data"))) {
   
@@ -43,7 +57,14 @@ if (!dir.exists(here("vignettes","data"))) {
 glimpse(youtube.raw)
 ```
 
-Wrangle data
+## Wrangle data
+Here, I create 3 different data frames:
+
+  1. `youtube.mod`: same as the `youtube.raw` data frame, but includes the mutated columns `like_to_dislike`, `view_count`, `view_group`, `view_factor`, `view_count_log10`, and `like_to_dislike_log10`.
+  
+  2. `youtube.attr_by_year`: summarizes commercial attributes and favorability by year
+  
+  3. `youtube.attr_by_brand`: summarizes commercial attributes and favorability by brand
 ```{r}
 size_factor <- 1/2
 youtube.mod <- youtube.raw %>%
@@ -90,8 +111,10 @@ youtube.attr_by_brand <- split(youtube.mod, youtube.mod$brand) %>%
   pivot_longer(cols = funny:animals, names_to = "attribute", values_to = "relative_prop")
 ```
 
-Present by_year and by_brand plots
-```{r, fig.height = 5}
+## Analysis
+
+### How common are superbowl commercial attributes over time and within brands?
+```{r, fig.show = 'hold'}
 youtube.attr_by_year %>%
   ggplot(aes(x = year, y = relative_prop, color = attribute, group = 1)) +
   geom_line() +
@@ -99,11 +122,15 @@ youtube.attr_by_year %>%
   labs(title = "Trends in Commercial Attribute Use over Time",
        subtitle = "Use of the 'funny' and 'sex' attributes in superbowl commercials is decreasing \n over time, while the use 'celebrity' and 'patriotic' is rising.",
        x = "Year",
-       y = "Relative Proportion") +
+       y = "Relative Proportion",
+       caption = "Units on the x-axis are discrete. Line plots were used for the ease of viewing.") +
   scale_x_discrete(breaks=seq(2000,2020,5)) +
   theme_bw() +
   theme(legend.position = "none",
-        axis.text.x = element_text(size = 6))
+        text = element_text(size = 15),
+        plot.title = element_text(size = 20),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12))
 
 youtube.attr_by_brand %>%
   ggplot(aes(x = attribute, y = brand, fill = relative_prop)) +
@@ -114,13 +141,17 @@ youtube.attr_by_brand %>%
        subtitle = "Within brands, 'Funny' and 'Shows product quickly' (spq) are among the most \n common commercial attributes.",
        x = "Commercial Attribute",
        y = "Brand",
-       fill = "Relative Proportion") +
-  theme_bw()
+       fill = "Relative Proportion",
+       caption = "Tile colors represent the proportion of a brand's \n commercials containing the given attribute.") +
+  theme_bw() +
+  theme(text = element_text(size = 15),
+        plot.title = element_text(size = 20),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12))
 ```
 
-Plot log like to dislike ratio by brand and year
-
-```{r, warning = FALSE, message = FALSE, fig.height = 5}
+### Which commercial attributes are associated with higher favorability?
+```{r, warning = FALSE, message = FALSE}
 youtube.mod %>%
   select(funny, show_product_quickly, patriotic, animals, danger, 
          celebrity, use_sex, like_to_dislike) %>%
@@ -139,17 +170,22 @@ youtube.mod %>%
        x = "Level",
        y = "Likes-to-Dislikes Ratio") +
   theme_bw() +
-  theme(legend.position = 'none')
+  theme(legend.position = 'none',
+        text = element_text(size = 15),
+        plot.title = element_text(size = 20),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12))
 
 ```
 
-```{r, warning = FALSE, message = FALSE, fig.height = 5}
+### To what extent does superbowl commercial favorability vary over time and between brands?
+```{r, warning = FALSE, message = FALSE, fig.show = 'hold'}
 youtube.mod %>%
   #filter(view_count > 1000) %>%
   group_by(year) %>%
   mutate(lmean = 10**mean(log10(like_to_dislike), na.rm = TRUE)) %>%
   ggplot(aes(x = year, y = like_to_dislike)) +
-  geom_point(aes(size = view_group, color = view_factor), alpha = 0.5) +
+  geom_point(aes(size = view_group, color = view_factor), alpha = 0.75) +
   geom_smooth(method = "lm", color = "black") +
   scale_y_continuous(trans = 'log10') +
   scale_size(guide = "none") +
@@ -160,16 +196,18 @@ youtube.mod %>%
        y = "Likes-to-Dislikes Ratio",
        caption = "NOTE: Y-axis is on a log10 scale.",
        color = "View Count") +
-  theme_bw()
+  theme_bw() +
+  theme(text = element_text(size = 15),
+        plot.title = element_text(size = 20),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12))
 
 youtube.mod %>%
   filter(!is.na(like_count)) %>%
   ggplot(aes(x = fct_reorder(brand, like_to_dislike, .fun = median), 
              y = like_to_dislike)) +
   geom_boxplot(outlier.shape = NA) +
-  geom_point(aes(size = view_group,
-                 color = view_factor),
-             alpha = 0.5,
+  geom_point(aes(size = view_group, color = view_factor), alpha = 0.75,
              position=position_jitter(width=0.15)) +
   scale_y_continuous(trans = 'log10') +
   scale_size(guide = "none") +
@@ -180,16 +218,21 @@ youtube.mod %>%
        color = "View Count",
        caption = "NOTE: Y-axis is on a log10 scale.") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = -35))
+  theme(axis.text.x = element_text(size = 12, angle = -35),
+        text = element_text(size = 15),
+        plot.title = element_text(size = 20),
+        axis.text.y = element_text(size = 12))
 
 ```
 
+### Is total view count associated commercial favorability?
 ```{r, warning = FALSE, message = FALSE}
 youtube.mod %>%
   #filter(view_count > 1000) %>%
   ggplot(aes(x = view_count, y = like_to_dislike)) +
   geom_point(shape = 1) +
   geom_smooth(method = "lm", color = "black") +
+  stat_poly_eq() +
   scale_y_continuous(trans = 'log10') +
   scale_x_continuous(trans = 'log10') +
   labs(title = "Commerical Favorability as a Function of View Count",
@@ -197,11 +240,17 @@ youtube.mod %>%
        caption = "NOTE: Y-axis is on a log10 scale.",
        x = "View Count",
        y = "Likes-to-Dislikes Ratio") +
-  theme_bw()
+  theme_bw() +
+    theme(text = element_text(size = 15),
+        plot.title = element_text(size = 20),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12))
 ``` 
 
-Below, I use `leaps::regsubsets` to apply model subset selection using exhaustive search.
-```{r, fig.width = 9, fig.height = 9}
+## `Leaps` Demonstration
+
+Now we want to use multiple linear regression to model commercial favorability. Below is the data matrix we will use for our model fitting. It includes 9 predictor variables and 1 response variable (i.e., `like_to_dislike_log10`). We don't necessarily want to use all of these variable in our model, since this could lead to over fitting. Therefore, we need to decide on a subset of these variables that will maximize the fit of the model while preventing over fitting. This is where `leaps` comes in.
+```{r}
 ################################################################################
 # Clean data frame before running model selection algo
 ################################################################################
@@ -211,8 +260,14 @@ youtube.subset <- youtube.mod %>%
          celebrity, use_sex, view_count_log10, like_to_dislike_log10) %>%
   filter(!is.na(view_count_log10) & !is.na(like_to_dislike_log10))
 
+glimpse(youtube.subset)
+
+```
+
+Below, I use `leaps::regsubsets` to apply model subset selection using an exhaustive search algorithm. Given a data matrix with a specified response variable, this function will fit a multiple linear model for every possible combination of predictors and returns the best-fitting model for each model size. For instance, if you provide 3 distinct predictor variables and a response variable, then `leaps::regsubsets` will return 3 separate models: the best-fitting model using one variable, the best-fitting model using two variables, and the full model.
+```{r, fig.width = 9, fig.height = 9}
 ################################################################################
-# Run leaps::regsubsets to perform model selection by EXHAUSTIVE search 
+# Create a regsubsets object and perform model selection with EXHAUSTIVE search 
 ################################################################################
 mod.subsets <- leaps::regsubsets(like_to_dislike_log10 ~., 
                   data = youtube.subset, 
@@ -237,6 +292,7 @@ par(mfrow = c(2,2))
   points(4,mod.subsets.summary$cp[4],col="red",cex=2,pch=20)
 ```
 
+The plots above were outputted by `leaps::summary.regsubsets`; they summarize the results from `leaps::regsubsets` using 4 different goodness of fit metrics: residual sum of squares (RSS), Bayesian Information Criterion (BIC), adjusted R-squared, and Mallow's Cp. If we use **adjusted R-squared** as our goodness of fit metric, then the lower left subplot tells us that the overall best-fitting model has six predictor variables. To see which variables these are, we will run the `leaps::plot.regsubsets` function.
 ```{r, fig.width = 9, fig.height = 9}
 par(mfrow = c(2,2))
   plot(mod.subsets, scale = "bic")
@@ -245,7 +301,9 @@ par(mfrow = c(2,2))
   plot(mod.subsets, scale = "Cp")
 ```
 
-Now we will build and summarize the best fitting model given the output from `leaps::regsubsets`
+As we can see above, `leaps::plot.regsubsets` returned graphical depiction of the best fitting-models for each number of predictor variables and goodness-of-fit metric. Since we are using adjusted R-squared, we want to select the model that maximizes this value. The top row on the lower left subplot tells us that the following model maximizes adjusted R-squared: `like_to_dislike_log10 ~ 1 + year + patriotic + animals + danger + celebrity + view_count_log10`. Note that this model has 6 predictor variables, which is consistent with the output from `leaps::summary.regsubsets`.
+
+Now we will fit the model that maximizes adjusted R-squared using the `lm` function.
 ```{r, fig.width = 9, fig.height = 9}
 ################################################################################
 # Build best fitting model and then summarize
@@ -258,3 +316,28 @@ par(mfrow = c(2,2))
 plot(mod)
 ```
 
+After running a one-way ANOVA on the model, we find that the significant sources of variation in `like_to_dislike_log10` come from `view_count_log10`, `celebrity`, and `danger`. 
+
+According to the model summary, the model estimates that, **on average**:
+
+  1. a 10-fold increase in view count is associated with an approximately 50% increase in like-to-dislike ratio. 
+  
+  2. the use of danger in a commercial is associated with an approximately 37% increase in like-to-dislike ratio.
+  
+  3. the use of celebrities in a commercial is associated with an approximately 80% increase in like-to-dislike ratio.
+  
+It is important to note that, based on the model diagnostic plots, really large and really small like-to-dislike ratios tend to be overestimated. Therefore, extreme estimates of like-to-dislike ratios should be taken with a grain of salt.
+
+## Summary
+Overall, this analysis showed that variations in superbowl commercial favorability, as measured by like-to-dislike ratio, can be explained in part by their view count on youtube, the inclusion of "dangerous" themes, and the inclusion of celebrities. It is important to note that this analysis was conducted on a limited sample of superbowl commercials provided by Five-Thirty-Eight, and so the findings from this analysis may not generalize to a larger, more representative sample. 
+
+## List of Functions
+`dplyr`: `mutate`, `select`, `filter`, `group_by`, `summarize`
+
+`tidyr`: `pivot_longer`
+
+`ggplot2`: `geom_point`, `geom_line`, `geom_tile`, `geom_smooth`, `geom_boxplot`, `facet_wrap`
+
+`purrr`: `map`, `mapdf`
+
+`leaps`: `regsubsets`, `summary.regsubsets`, `plot.regsubsets`

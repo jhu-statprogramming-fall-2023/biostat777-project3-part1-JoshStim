@@ -1,9 +1,22 @@
 home:
   links:
+  - text: R Documentation
+    href: https://www.rdocumentation.org/packages/leaps/versions/3.1
   - text: Browse Source Code
     href: https://github.com/cran/leaps
 
 template:
   bootstrap: 5
   bootswatch: minty
-
+  
+navbar:
+  structure:
+    left:  [reference, articles, external_demos]
+  components:
+    external_demos:
+      text: External Demos
+      menu:
+      - text: (Towards Data Science) Selecting the best predictors...
+        href: https://towardsdatascience.com/selecting-the-best-predictors-for-linear-regression-in-r-f385bf3d93e9
+      - text: (RPubs) All subset regression with leaps
+        href: https://rstudio-pubs-static.s3.amazonaws.com/2897_9220b21cfc0c43a396ff9abf122bb351.html

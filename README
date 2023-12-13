@@ -1,4 +1,20 @@
-This package performs an exhaustive search for the best subsets of a given
+Leaps -- Regression Subset Selection
+
+Package Author and Maintainer: Thomas Lumley <t.lumley@auckland.ac.nz>
+Project Author: Josh Stim <jstim1@jh.edu>
+
+URL to the original Leaps GitHub repository: https://github.com/cran/leaps
+URL to deployed pkgdown website: https://jhu-statprogramming-fall-2023.github.io/biostat777-project3-pkgdown-JoshStim
+
+Five Website Customizations:
+1. Applied minty theme by modifying template section in _pkgdown.yml
+2. Added a "Browse Source Code" link on the home side bar. This brings the user to the Leaps GitHub Repository
+3. Created an index.md file to be used for populating the home page of the website
+4. Added "External Demos" tab in the navigation bar. Includes links to other articles that demonstrate the leaps package.
+5. Included an "R Documentation" link to the home side bar. This brings the user to the Leaps RDocumentation page
+
+Description:
+"This package performs an exhaustive search for the best subsets of a given
 set of potential regressors, using a branch-and-bound algorithm, and also 
 performs searches using a number of less time-consuming techniques. It is
 designed to replace the "leaps()" command in S.  It is based on FORTRAN77
@@ -15,5 +31,38 @@ rank. This is particularly useful when there are more predictors than
 cases and the best "small" model is wanted. Fourthly, when there are
 many more cases than predictors, the search can be run on the output
 of biglm() and the time and memory use are then independent of the
-number of observations.
+number of observations."
 
+Exported Classes and Functions:
+leaps	 Subset selection by `leaps and bounds' compatible with S. 
+
+  - "...performs an exhaustive search for the best subsets of the variables in x for predicting y in linear regression, using an efficient branch-and-bound algorithm. It is a compatibility wrapper for regsubsets does the same thing better." - From R Documentation
+
+regsubsets	More sophisticated function, including formula method
+
+  - "Model selection by exhaustive search, forward or backward stepwise, or sequential replacement." - From R Documentation
+
+How to Install:
+```{r}
+install.packages("leaps")
+library(leaps)
+```
+
+Example (`leaps`):
+```{r}
+x<-matrix(rnorm(100),ncol=4)
+y<-rnorm(25)
+leaps(x,y)
+```
+
+Example (`regsubsets`):
+```{r}
+data(swiss)
+a<-regsubsets(as.matrix(swiss[,-1]),swiss[,1])
+summary(a)
+b<-regsubsets(Fertility~.,data=swiss,nbest=2)
+summary(b)
+
+coef(a, 1:3)
+vcov(a, 3)
+```
