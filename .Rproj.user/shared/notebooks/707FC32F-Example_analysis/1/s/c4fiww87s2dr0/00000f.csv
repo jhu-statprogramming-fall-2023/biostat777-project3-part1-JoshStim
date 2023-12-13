@@ -1,0 +1,51 @@
+"0","if (!file.exists(here(""data"",""youtube.csv""))) {"
+"0","  "
+"0","  dir.create(here(""data""))"
+"0","  tuesdata <- tidytuesdayR::tt_load(2021, week = 10)"
+"0","  youtube.raw <- tuesdata$youtube"
+"0","  write.csv(youtube.raw, here(""data"",""youtube.csv""))"
+"0","  "
+"0","} else{"
+"0","  "
+"0","  youtube.raw <- read.csv(here(""data"",""youtube.csv""))"
+"0","  "
+"0","}"
+"0",""
+"0","glimpse(youtube.raw)"
+"1","Rows: 247"
+"1",""
+"1","
+"
+"1","Columns: 26"
+"1",""
+"1","
+"
+"1","$ X                         [3m[38;5;246m<int>[39m[23m 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, …
+$ year                      [3m[38;5;246m<int>[39m[23m 2018, 2020, 2006, 2018, 2003, 2020, 2020, 2020, 2020, 2020, 2010, 2010, 2007, 2002,…
+$ brand                     [3m[38;5;246m<chr>[39m[23m ""Toyota"", ""Bud Light"", ""Bud Light"", ""Hynudai"", ""Bud Light"", ""Toyota"", ""Coca-Cola"", …
+$ superbowl_ads_dot_com_url [3m[38;5;246m<chr>[39m[23m ""https://superbowl-ads.com/good-odds-toyota/"", ""https://superbowl-ads.com/2020-bud-…
+$ youtube_url               [3m[38;5;246m<chr>[39m[23m ""https://www.youtube.com/watch?v=zeBZvwYQ-hA"", ""https://www.youtube.com/watch?v=nbb…
+$ funny                     [3m[38;5;246m<lgl>[39m[23m FALSE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, …
+$ show_product_quickly      [3m[38;5;246m<lgl>[39m[23m FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, …
+$ patriotic                 [3m[38;5;246m<lgl>[39m[23m FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, F…
+$ celebrity                 [3m[38;5;246m<lgl>[39m[23m FALSE, TRUE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE…
+$ danger                    [3m[38;5;246m<lgl>[39m[23m FALSE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE…
+$ animals                   [3m[38;5;246m<lgl>[39m[23m FALSE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, TRUE…
+$ use_sex                   [3m[38;5;246m<lgl>[39m[23m FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, T…
+$ id                        [3m[38;5;246m<chr>[39m[23m ""zeBZvwYQ-hA"", ""nbbp0VW7z8w"", ""yk0MQD5YgV8"", ""lNPccrGk77A"", ""ovQYgnXHooY"", ""f34Ji70…
+$ kind                      [3m[38;5;246m<chr>[39m[23m ""youtube#video"", ""youtube#video"", ""youtube#video"", ""youtube#video"", ""youtube#video""…
+$ etag                      [3m[38;5;246m<chr>[39m[23m ""rn-ggKNly38Cl0C3CNjNnUH9xUw"", ""1roDoK-SYqSpqYwKbYrMH0jEJQ4"", ""OHiDfHTB3kilXfN8W0VT…
+$ view_count                [3m[38;5;246m<int>[39m[23m 173929, 47752, 142310, 198, 13741, 23636, 304254, 17892, 38385, 782, 68458, 3805, 1…
+$ like_count                [3m[38;5;246m<int>[39m[23m 1233, 485, 129, 2, 20, 115, 1470, 78, 342, 7, 46, 9, 133, 642, 175429, 2315, 29, 34…
+$ dislike_count             [3m[38;5;246m<int>[39m[23m 38, 14, 15, 0, 3, 11, 384, 6, 7, 0, 14, 0, 24, 10, 7445, 130, 0, 12, 1, 576, 30, 38…
+$ favorite_count            [3m[38;5;246m<int>[39m[23m 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ comment_count             [3m[38;5;246m<int>[39m[23m NA, 14, 9, 0, 2, 13, 227, 6, 30, 0, 8, 1, 13, 50, 8441, 162, 3, 42, 59, 319, 33, 29…
+$ published_at              [3m[38;5;246m<chr>[39m[23m ""2018-02-03 11:29:14"", ""2020-01-31 21:04:13"", ""2006-02-06 10:02:36"", ""2018-03-09 15…
+$ title                     [3m[38;5;246m<chr>[39m[23m ""Toyota Super Bowl Commercial 2018 Good Odds"", ""Bud Light: Post Malone #PostyStore …
+$ description               [3m[38;5;246m<chr>[39m[23m ""Toyota Super Bowl Commercial 2018 Good Odds. You can watch Toyota Super Bowl 2018 …
+$ thumbnail                 [3m[38;5;246m<chr>[39m[23m ""https://i.ytimg.com/vi/zeBZvwYQ-hA/sddefault.jpg"", ""https://i.ytimg.com/vi/nbbp0VW…
+$ channel_title             [3m[38;5;246m<chr>[39m[23m ""Funny Commercials"", ""VCU Brandcenter"", ""John Keehler"", ""IATSE 490"", ""jassymei"", ""F…
+$ category_id               [3m[38;5;246m<int>[39m[23m 1, 27, 17, 22, 24, 1, 24, 2, 24, 24, 24, 24, 24, 24, 17, 17, 23, 23, 23, 1, 23, 24,…"
+"1",""
+"1","
+"

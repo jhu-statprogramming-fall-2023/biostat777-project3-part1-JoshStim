@@ -1,0 +1,13 @@
+"0","size_factor <- 1/2"
+"0","youtube.mod <- youtube.raw %>%"
+"0","  mutate(like_to_dislike = (like_count + 1) / (dislike_count + 1),"
+"0","         view_group = case_when(view_count > 10 ** 6 ~ (size_factor)**0,"
+"0","         view_count > 10 ** 5 & view_count <= 10 ** 6 ~ (size_factor)**1,"
+"0","         view_count > 10 ** 4 & view_count <= 10 ** 5 ~ (size_factor)**2,"
+"0","         view_count > 10 ** 3 & view_count <= 10 ** 4 ~ (size_factor)**3,"
+"0","         view_count > 0 & view_count <= 10 ** 3 ~ (size_factor)**4)) %>%"
+"0","  mutate(view_factor = factor(view_group),"
+"0","         view_count_log10 = log10(view_count),"
+"0","         like_to_dislike_log10 = log10(like_to_dislike))"
+"2","Error: object 'youtube.raw' not found
+"

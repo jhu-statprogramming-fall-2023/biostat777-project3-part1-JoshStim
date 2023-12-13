@@ -1,0 +1,27 @@
+{
+    "id": "87295C75",
+    "path": "~/Desktop/Workspaces/biostat777-project3-part1/vignettes/Example_analysis.Rmd",
+    "project_path": "vignettes/Example_analysis.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1702351854840.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "162,62",
+        "scrollLine": "150",
+        "last_setup_crc32": "c768742df1f1eb51"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1702483860,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1702483860952,
+    "read_only": false,
+    "read_only_alternatives": []
+}
