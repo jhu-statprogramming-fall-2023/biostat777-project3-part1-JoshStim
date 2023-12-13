@@ -41,16 +41,16 @@ Note that I will be using the commercial's **like-to-dislike ratio** from youtub
 ## Load Data
 The data for this analysis are from [Five-Thirty-Eight](https://github.com/fivethirtyeight/superbowl-ads) by-way-of [TidyTuesday](https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-03-02/readme.md). The TidyTuesday link provides access to the TidyTuesday github repository as well as the data dictionary used for this analysis.
 ```{r}
-if (!dir.exists(here("vignettes","data"))) {
+if (!file.exists(here("data","youtube.csv"))) {
   
-  dir.create(here("vignettes", "data"))
+  dir.create(here("data"))
   tuesdata <- tidytuesdayR::tt_load(2021, week = 10)
   youtube.raw <- tuesdata$youtube
-  write.csv(youtube.raw, here("vignettes", "data","youtube.csv"))
+  write.csv(youtube.raw, here("data","youtube.csv"))
   
 } else{
   
-  youtube.raw <- read.csv(here("vignettes", "data","youtube.csv"))
+  youtube.raw <- read.csv(here("data","youtube.csv"))
   
 }
 
